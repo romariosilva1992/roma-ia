@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: roma-ai
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: openrouter/free
+      - key: OPENROUTER_APP_NAME
+        value: ROMA AI

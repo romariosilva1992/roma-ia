@@ -1,0 +1,1 @@
+"""Configuração e orquestração centrais da ROMA."""

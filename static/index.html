@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0f1117">
+    <title>ROMA — Estúdio de escrita</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #e5e7ef;
+        background: #0f1117;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        --bg: #0f1117;
+        --panel: #181b24;
+        --panel-deep: #141720;
+        --line: #2d3342;
+        --muted: #9299aa;
+        --pink: #ff4d6d;
+        --pink-dark: #e60039;
+        --green: #43d19e;
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; min-width: 320px; min-height: 100vh; }
+      button, input, textarea, select { font: inherit; }
+      button { color: inherit; }
+      .app { min-height: 100vh; display: flex; flex-direction: column; }
+      .topbar { min-height: 68px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 10px 22px; background: var(--panel); border-bottom: 1px solid var(--line); }
+      .brand { display: flex; align-items: center; gap: 11px; min-width: 245px; }
+      .brand-mark { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 11px; background: linear-gradient(145deg, #ff5571, #c60035 72%, #71001f); color: #fff; font-size: 20px; font-weight: 900; box-shadow: 0 0 20px #ff2e5530; }
+      .brand-name { color: #fff; font-size: 18px; font-weight: 900; letter-spacing: .19em; }
+      .version { margin-left: 7px; padding: 3px 7px; border: 1px solid #ff4d6d4d; border-radius: 20px; color: var(--pink); background: #ff2e5517; font: 700 9px ui-monospace, monospace; letter-spacing: .08em; }
+      .brand-subtitle { margin-top: 2px; color: var(--muted); font-size: 10px; }
+      .project-picker { display: flex; align-items: center; gap: 10px; min-width: 210px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--bg); }
+      .project-icon { color: var(--pink); font-size: 17px; }
+      .project-meta { display: flex; flex-direction: column; gap: 3px; }
+      .project-meta small { color: var(--muted); font-size: 10px; }
+      .project-meta input { width: 220px; border: 0; outline: 0; color: #f4f5f8; background: transparent; font-size: 12px; font-weight: 700; }
+      .top-actions { display: flex; align-items: center; gap: 10px; }
+      .engine-status { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; color: #c1c6d3; background: #212530; font-size: 11px; }
+      .dot { width: 7px; height: 7px; flex: 0 0 auto; border-radius: 50%; background: var(--green); box-shadow: 0 0 9px #43d19e77; }
+      .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 36px; padding: 0 13px; border: 1px solid var(--line); border-radius: 8px; color: #dfe2eb; background: #212530; font-size: 11px; font-weight: 700; cursor: pointer; transition: .16s ease; }
+      .button:hover:not(:disabled) { border-color: #596176; background: #292e3a; }
+      .button:disabled { cursor: wait; opacity: .65; }
+      .button-primary { border-color: #ff2e5570; color: #ff8095; background: #ff2e5517; }
+      .button-primary:hover:not(:disabled) { border-color: var(--pink); background: #ff2e5529; }
+      .layout { display: grid; flex: 1; min-height: calc(100vh - 68px); grid-template-columns: 260px minmax(360px, 1fr) 280px; }
+      .sidebar, .inspector { display: flex; flex-direction: column; min-height: 0; background: var(--panel); }
+      .sidebar { border-right: 1px solid var(--line); }
+      .inspector { border-left: 1px solid var(--line); }
+      .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 15px 14px 12px; border-bottom: 1px solid var(--line); color: #a2a8b6; background: #0f111780; font: 700 10px ui-monospace, monospace; letter-spacing: .1em; text-transform: uppercase; }
+      .section-heading span:first-child { display: inline-flex; align-items: center; gap: 8px; }
+      .section-icon { color: var(--pink); font-size: 13px; }
+      .book-card { padding: 15px 14px; border-bottom: 1px solid var(--line); background: #0f111780; }
+      .book-card h1 { margin: 0 0 5px; color: #fff; font-size: 13px; line-height: 1.5; }
+      .book-card p { margin: 0; color: var(--muted); font-size: 10px; }
+      .progress-row { display: flex; justify-content: space-between; margin: 14px 0 6px; color: var(--muted); font-size: 10px; }
+      .progress-track { height: 5px; overflow: hidden; border-radius: 10px; background: #292e3a; }
+      .progress-fill { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--pink), var(--pink-dark)); transition: width .25s; }
+      .sidebar-content { flex: 1; overflow-y: auto; padding: 14px 10px; }
+      .side-label { display: flex; justify-content: space-between; padding: 0 7px 8px; color: #7f8798; font: 700 9px ui-monospace, monospace; letter-spacing: .09em; text-transform: uppercase; }
+      .chapter-row { display: flex; align-items: center; gap: 9px; padding: 10px 9px; border: 1px solid transparent; border-radius: 7px; color: #9ca3b3; font-size: 11px; }
+      .chapter-row.active { border-color: #ff2e5550; color: #f2dce1; background: #ff2e5518; }
+      .chapter-row .file-icon { color: #788194; }
+      .chapter-row.active .file-icon { color: var(--pink); }
+      .chapter-row span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .sidebar-note { margin-top: 19px; }
+      .lore-item { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin: 5px 0; padding: 8px; border: 1px solid var(--line); border-radius: 6px; color: #c8ccd6; background: #21253099; font-size: 10px; }
+      .lore-item small { color: #798194; }
+      .agent-list { padding: 11px 10px 13px; border-top: 1px solid var(--line); background: var(--bg); }
+      .agent-list .side-label { padding-left: 2px; }
+      .agent { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 6px; padding: 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--panel); }
+      .agent-info { min-width: 0; }
+      .agent-name { color: #dce0e9; font-size: 10px; font-weight: 700; }
+      .agent-detail { margin-top: 3px; overflow: hidden; color: #81899a; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+      .agent-status { padding: 3px 5px; border: 1px solid #43d19e40; border-radius: 4px; color: var(--green); background: #43d19e12; font: 700 8px ui-monospace, monospace; text-transform: uppercase; }
+      .agent.busy .agent-status { border-color: #ff4d6d66; color: var(--pink); background: #ff2e5518; }
+      .agent.busy .dot { background: var(--pink); box-shadow: 0 0 9px #ff4d6d77; }
+      .workspace { min-width: 0; display: flex; flex-direction: column; background: var(--bg); }
+      .workspace-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 7px 15px; border-bottom: 1px solid var(--line); background: var(--panel); }
+      .tab-label { display: flex; align-items: center; gap: 8px; color: #f2f3f6; font-size: 11px; font-weight: 700; }
+      .tab-label .section-icon { font-size: 15px; }
+      .word-count { color: #8991a2; font: 10px ui-monospace, monospace; }
+      .writing-area { width: min(100% - 40px, 800px); margin: 0 auto; padding: 27px 0 38px; }
+      .form-row { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 12px; align-items: end; margin-bottom: 16px; }
+      .field-label { display: block; margin-bottom: 7px; color: #b9bfcd; font-size: 10px; font-weight: 700; }
+      .field, .select { width: 100%; min-height: 38px; padding: 9px 11px; border: 1px solid var(--line); border-radius: 7px; outline: 0; color: #e5e7ef; background: var(--panel); font-size: 11px; }
+      .field:focus, .select:focus, .editor:focus { border-color: #ff4d6d99; box-shadow: 0 0 0 3px #ff2e5514; }
+      .field::placeholder, .editor::placeholder { color: #737b8c; }
+      .editor-label-row { display: flex; justify-content: space-between; align-items: center; margin: 19px 2px 8px; }
+      .editor-label-row .field-label { margin: 0; }
+      .autosave { color: #737b8c; font: 9px ui-monospace, monospace; }
+      .editor { display: block; width: 100%; min-height: 350px; padding: 22px; resize: vertical; border: 1px solid var(--line); border-radius: 9px; outline: 0; color: #d9dce5; background: #141720; font: 13px/1.85 Georgia, "Times New Roman", serif; transition: border-color .15s, box-shadow .15s; }
+      .editor::placeholder { font: 12px/1.7 Inter, ui-sans-serif, system-ui, sans-serif; }
+      .editor-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+      .button-group { display: flex; flex-wrap: wrap; gap: 8px; }
+      .message { min-height: 18px; margin: 9px 2px 0; color: var(--green); font-size: 10px; }
+      .message.error { color: #ff7e8f; }
+      .assistant-panel { margin-top: 18px; overflow: hidden; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
+      .assistant-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
+      .assistant-title { display: flex; align-items: center; gap: 8px; color: #f2f3f6; font-size: 11px; font-weight: 750; }
+      .assistant-subtitle { margin-top: 3px; color: #8991a2; font-size: 9px; }
+      .command-shortcuts { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px 0; }
+      .shortcut { min-height: 28px; padding: 0 9px; border: 1px solid var(--line); border-radius: 6px; color: #c0c5d0; background: #212530; font-size: 9px; cursor: pointer; }
+      .shortcut:hover { border-color: #ff4d6d77; color: #ff90a2; }
+      .conversation { display: grid; gap: 9px; max-height: 340px; overflow-y: auto; padding: 12px; }
+      .chat-message { max-width: 92%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; color: #cfd3dc; background: #141720; font-size: 11px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+      .chat-message.user { justify-self: end; border-color: #ff4d6d44; background: #ff2e550e; }
+      .chat-message.assistant { justify-self: start; }
+      .chat-message.error { color: #ff8b99; }
+      .chat-actions { display: flex; gap: 7px; margin-top: 9px; }
+      .chat-actions .button { min-height: 28px; padding: 0 8px; font-size: 9px; }
+      .assistant-form { display: flex; align-items: flex-end; gap: 8px; padding: 0 12px 12px; }
+      .assistant-input { min-height: 44px; max-height: 130px; flex: 1; resize: vertical; }
+      .assistant-form .button { min-height: 42px; }
+      .inspector-content { padding: 13px 12px; }
+      .metric-card { margin-bottom: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+      .metric-title { display: flex; align-items: center; gap: 7px; margin-bottom: 11px; color: #aeb4c2; font: 700 9px ui-monospace, monospace; letter-spacing: .07em; text-transform: uppercase; }
+      .metric-row { display: flex; justify-content: space-between; gap: 8px; margin-top: 9px; color: #9ba2b1; font-size: 10px; }
+      .metric-row strong { color: #e5e7ef; font: 700 10px ui-monospace, monospace; }
+      .metric-badge { padding: 3px 6px; border: 1px solid #ff4d6d4d; border-radius: 4px; color: var(--pink); background: #ff2e5514; font: 700 8px ui-monospace, monospace; }
+      .style-controls { display: grid; gap: 12px; }
+      .style-controls .field-label { display: flex; justify-content: space-between; gap: 5px; }
+      .style-controls input[type="range"] { width: 100%; height: 4px; accent-color: var(--pink); }
+      .style-controls output { color: var(--pink); font: 10px ui-monospace, monospace; }
+      .notice { color: #82899a; font-size: 9px; line-height: 1.55; }
+      .toast { position: fixed; right: 18px; bottom: 18px; z-index: 5; max-width: min(380px, calc(100vw - 36px)); padding: 11px 15px; border: 1px solid #43d19e55; border-radius: 8px; color: #c8f5e3; background: #18251f; box-shadow: 0 12px 35px #0006; font-size: 11px; }
+      [hidden] { display: none !important; }
+      @media (max-width: 1040px) {
+        .layout { grid-template-columns: 230px minmax(340px, 1fr); }
+        .inspector { display: none; }
+        .topbar { padding-inline: 15px; }
+      }
+      @media (max-width: 700px) {
+        .topbar { flex-wrap: wrap; gap: 10px; padding: 10px 13px; }
+        .brand { min-width: 0; }
+        .brand-subtitle, .version { display: none; }
+        .project-picker { flex: 1; min-width: 0; }
+        .project-meta { min-width: 0; flex: 1; }
+        .project-meta input { width: 100%; }
+        .top-actions { margin-left: auto; }
+        .engine-status { display: none; }
+        .layout { display: flex; min-height: calc(100vh - 68px); }
+        .sidebar { display: none; }
+        .workspace { width: 100%; }
+        .writing-area { width: min(100% - 26px, 800px); padding-top: 18px; }
+        .form-row { grid-template-columns: 1fr; }
+        .editor { min-height: 300px; padding: 16px; }
+        .workspace-toolbar { padding-inline: 13px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">✦</div>
+          <div>
+            <div><span class="brand-name">ROMA</span><span class="version">ENGINE v1.0</span></div>
+            <div class="brand-subtitle">Estúdio de escrita e criação</div>
+          </div>
+        </div>
+        <label class="project-picker">
+          <span class="project-icon" aria-hidden="true">▣</span>
+          <span class="project-meta"><small>Projeto ativo</small><input id="project-name" aria-label="Nome do projeto" value="Meu próximo livro"></span>
+        </label>
+        <div class="top-actions">
+          <div class="engine-status"><span class="dot"></span><span>OpenRouter · geração por API</span></div>
+          <button class="button button-primary" id="export-button" type="button">↓ <span>Exportar</span></button>
+        </div>
+      </header>
+
+      <div class="layout">
+        <aside class="sidebar">
+          <div class="section-heading"><span><span class="section-icon">▤</span> Estrutura da obra</span><span>⌄</span></div>
+          <div class="book-card">
+            <h1 id="book-title">Meu próximo livro</h1>
+            <p>Projeto local · rascunhos</p>
+            <div class="progress-row"><span>Progresso do capítulo</span><span id="progress-value">0%</span></div>
+            <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+          </div>
+          <div class="sidebar-content">
+            <div class="side-label"><span>Capítulos</span><span id="chapter-count">01</span></div>
+            <div class="chapter-row active"><span class="file-icon">▧</span><span id="chapter-nav-title">Novo capítulo</span></div>
+            <div class="sidebar-note">
+              <div class="side-label"><span>Bíblia da obra</span><span>◇</span></div>
+              <div class="lore-item"><span>◉ Contexto do projeto</span><small>local</small></div>
+              <div class="lore-item"><span>⌘ Fontes de pesquisa</span><small>RAG</small></div>
+            </div>
+          </div>
+          <section class="agent-list" aria-label="Status dos módulos">
+            <div class="side-label"><span><span class="section-icon">◉</span> Módulos da ROMA</span><span class="dot"></span></div>
+            <div class="agent" id="researcher-agent"><div class="agent-info"><div class="agent-name">Pesquisador</div><div class="agent-detail">Busca local de referências</div></div><span class="agent-status">pronto</span></div>
+            <div class="agent" id="writer-agent"><div class="agent-info"><div class="agent-name">Escritor</div><div class="agent-detail">Geração de rascunho</div></div><span class="agent-status">pronto</span></div>
+            <div class="agent" id="editor-agent"><div class="agent-info"><div class="agent-name">Revisor</div><div class="agent-detail">Revisão do texto gerado</div></div><span class="agent-status">pronto</span></div>
+          </section>
+        </aside>
+
+        <main class="workspace">
+          <div class="workspace-toolbar">
+            <div class="tab-label"><span class="section-icon">✎</span> Rascunho &amp; geração</div>
+            <span class="word-count" id="word-count">0 palavras</span>
+          </div>
+          <div class="writing-area">
+            <div class="form-row">
+              <div>
+                <label class="field-label" for="chapter-title">Título do capítulo</label>
+                <input class="field" id="chapter-title" maxlength="200" placeholder="Ex.: O começo da jornada" required>
+              </div>
+              <div>
+                <label class="field-label" for="tone">Tom de voz</label>
+                <select class="select" id="tone">
+                  <option>Analítico e envolvente</option>
+                  <option>Direto e didático</option>
+                  <option>Poético e contemplativo</option>
+                  <option>Técnico e objetivo</option>
+                  <option>Personalizado</option>
+                </select>
+              </div>
+            </div>
+            <label class="field-label" for="topic-context">Contexto e ideias principais</label>
+            <textarea class="field" id="topic-context" rows="3" maxlength="20000" placeholder="Descreva o que acontece neste capítulo, os pontos importantes ou as informações que devem aparecer." required></textarea>
+            <div class="editor-label-row">
+              <label class="field-label" for="draft">Editor de capítulo</label>
+              <span class="autosave" id="edit-state">Rascunho ainda não gerado</span>
+            </div>
+            <textarea class="editor" id="draft" maxlength="100000" placeholder="Seu rascunho aparecerá aqui. Depois de gerar, você pode editar o texto diretamente nesta área."></textarea>
+            <div class="editor-actions">
+              <div class="button-group">
+                <button class="button button-primary" id="generate-button" type="button"><span aria-hidden="true">✦</span><span id="generate-label">Gerar capítulo</span></button>
+                <button class="button" id="save-feedback" type="button" disabled>✓ Salvar minha revisão</button>
+              </div>
+              <button class="button" id="copy-button" type="button">▣ Copiar texto</button>
+            </div>
+            <p class="message" id="message" role="status" aria-live="polite"></p>
+            <section class="assistant-panel" aria-label="Porta de comandos da ROMA">
+              <div class="assistant-header">
+                <div>
+                  <div class="assistant-title"><span class="section-icon">✦</span> Converse com a ROMA</div>
+                  <div class="assistant-subtitle">Peça mudanças ou ideias. A resposta não altera o manuscrito até você aplicar.</div>
+                </div>
+                <span class="metric-badge">ASSISTENTE</span>
+              </div>
+              <div class="command-shortcuts" aria-label="Comandos rápidos">
+                <button class="shortcut" type="button" data-command="Continue o capítulo a partir do final atual. Mantenha a voz, os fatos e a continuidade; escreva a continuação diretamente.">Continuar capítulo</button>
+                <button class="shortcut" type="button" data-command="Revise o texto atual para melhorar clareza, gramática e fluidez, preservando o sentido e o estilo. Devolva o texto revisado completo.">Revisar texto</button>
+                <button class="shortcut" type="button" data-command="Expanda a cena atual com detalhes sensoriais e ações concretas, sem inventar fatos incompatíveis com o contexto. Devolva a cena expandida.">Expandir cena</button>
+                <button class="shortcut" type="button" data-command="Reescreva o texto atual para melhorar o ritmo e a força narrativa, mantendo personagens, fatos e intenção. Devolva o texto completo reescrito.">Melhorar escrita</button>
+                <button class="shortcut" type="button" data-command="Resuma o capítulo atual em tópicos concisos, destacando acontecimentos, personagens e informações importantes.">Resumir capítulo</button>
+              </div>
+              <div class="conversation" id="conversation" aria-live="polite"></div>
+              <form class="assistant-form" id="assistant-form">
+                <textarea class="field assistant-input" id="assistant-input" rows="2" maxlength="5000" aria-label="Instrução para a ROMA" placeholder="Escreva um comando, por exemplo: deixe o diálogo mais natural..."></textarea>
+                <button class="button button-primary" id="assistant-send" type="submit">Enviar <span aria-hidden="true">↑</span></button>
+              </form>
+            </section>
+          </div>
+        </main>
+
+        <aside class="inspector">
+          <div class="section-heading"><span><span class="section-icon">◌</span> Painel do projeto</span><span class="metric-badge">LOCAL</span></div>
+          <div class="inspector-content">
+            <section class="metric-card">
+              <div class="metric-title"><span class="section-icon">⌁</span> Estado da sessão</div>
+              <div class="metric-row"><span>Palavras no editor</span><strong id="metric-words">0</strong></div>
+              <div class="metric-row"><span>Revisões salvas</span><strong id="feedback-count">—</strong></div>
+              <div class="metric-row"><span>Assistente</span><strong>OpenRouter</strong></div>
+            </section>
+            <section class="metric-card">
+              <div class="metric-title"><span class="section-icon">⚙</span> Diretrizes de estilo</div>
+              <div class="style-controls">
+                <div>
+                  <label class="field-label" for="pov">Ponto de vista</label>
+                  <select class="select" id="pov"><option>Terceira pessoa</option><option>Primeira pessoa</option><option>Impessoal</option></select>
+                </div>
+                <div>
+                  <label class="field-label" for="pace">Ritmo das frases</label>
+                  <select class="select" id="pace"><option>Média a curta</option><option>Rápido e conciso</option><option>Ritmo contemplativo</option><option>Frases longas e detalhadas</option></select>
+                </div>
+                <div>
+                  <label class="field-label" for="metaphors">Uso de metáforas</label>
+                  <select class="select" id="metaphors"><option>Moderada</option><option>Baixa</option><option>Alta</option></select>
+                </div>
+              </div>
+            </section>
+            <p class="notice">A geração e o assistente usam a API do OpenRouter. É necessário configurar uma chave válida no arquivo .env. Supabase e banco vetorial ainda não estão conectados.</p>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status" hidden></div>
+
+    <script>
+      const titleInput = document.querySelector("#chapter-title");
+      const topicInput = document.querySelector("#topic-context");
+      const draftEditor = document.querySelector("#draft");
+      const generateButton = document.querySelector("#generate-button");
+      const generateLabel = document.querySelector("#generate-label");
+      const saveButton = document.querySelector("#save-feedback");
+      const message = document.querySelector("#message");
+      const toast = document.querySelector("#toast");
+      const assistantForm = document.querySelector("#assistant-form");
+      const assistantInput = document.querySelector("#assistant-input");
+      const assistantSend = document.querySelector("#assistant-send");
+      const conversation = document.querySelector("#conversation");
+      let originalGeneratedText = "";
+      let chatHistory = [];
+      let toastTimeout;
+
+      function updateWordCount() {
+        const words = draftEditor.value.trim().split(/\s+/).filter(Boolean).length;
+        document.querySelector("#word-count").textContent = `${words.toLocaleString("pt-BR")} palavras`;
+        document.querySelector("#metric-words").textContent = words.toLocaleString("pt-BR");
+        document.querySelector("#progress-value").textContent = `${Math.min(100, Math.round(words / 30))}%`;
+        document.querySelector("#progress-fill").style.width = `${Math.min(100, Math.round(words / 30))}%`;
+      }
+
+      function setAgentsBusy(isBusy) {
+        for (const id of ["researcher-agent", "writer-agent", "editor-agent"]) {
+          const agent = document.getElementById(id);
+          agent.classList.toggle("busy", isBusy);
+          agent.querySelector(".agent-status").textContent = isBusy ? "ativo" : "pronto";
+        }
+      }
+
+      function showToast(text) {
+        toast.textContent = text;
+        toast.hidden = false;
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => { toast.hidden = true; }, 3000);
+      }
+
+      function addChatMessage(role, text, isError = false) {
+        const bubble = document.createElement("div");
+        bubble.className = `chat-message ${role}${isError ? " error" : ""}`;
+        bubble.textContent = text;
+        conversation.append(bubble);
+        conversation.scrollTop = conversation.scrollHeight;
+        return bubble;
+      }
+
+      function addApplyActions(bubble, text) {
+        const actions = document.createElement("div");
+        actions.className = "chat-actions";
+        for (const [label, append] of [["Substituir editor", false], ["Acrescentar ao editor", true]]) {
+          const button = document.createElement("button");
+          button.className = "button";
+          button.type = "button";
+          button.textContent = label;
+          button.addEventListener("click", () => {
+            draftEditor.value = append && draftEditor.value.trim()
+              ? `${draftEditor.value.trimEnd()}\n\n${text}`
+              : text;
+            draftEditor.dispatchEvent(new Event("input", { bubbles: true }));
+            document.querySelector("#edit-state").textContent = "Alteração da ROMA aplicada";
+            showToast(append ? "Resposta acrescentada ao editor." : "Resposta inserida no editor.");
+            draftEditor.scrollIntoView({ behavior: "smooth", block: "center" });
+            draftEditor.focus();
+          });
+          actions.append(button);
+        }
+        bubble.append(actions);
+      }
+
+      assistantForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const command = assistantInput.value.trim();
+        if (!command) {
+          assistantInput.focus();
+          return;
+        }
+
+        addChatMessage("user", command);
+        assistantInput.value = "";
+        assistantSend.disabled = true;
+        assistantSend.textContent = "Pensando...";
+        setAgentsBusy(true);
+        try {
+          const response = await fetch("/api/v1/assistant/command", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              command,
+              chapter_title: titleInput.value.trim(),
+              topic_context: topicInput.value.trim(),
+              draft: draftEditor.value,
+              history: chatHistory.slice(-10),
+              custom_style: {
+                tone: document.querySelector("#tone").value,
+                pov: document.querySelector("#pov").value,
+                sentence_length: document.querySelector("#pace").value,
+                metaphors_usage: document.querySelector("#metaphors").value
+              }
+            })
+          });
+          const result = await response.json().catch(() => null);
+          if (!response.ok) {
+            const detail = Array.isArray(result?.detail)
+              ? "Confira o tamanho do comando e do texto do capítulo."
+              : result?.detail || `Não foi possível executar o comando (HTTP ${response.status}).`;
+            throw new Error(detail);
+          }
+          const bubble = addChatMessage("assistant", result.response);
+          addApplyActions(bubble, result.response);
+          chatHistory.push(
+            { role: "user", content: command },
+            { role: "assistant", content: result.response }
+          );
+          chatHistory = chatHistory.slice(-10);
+        } catch (error) {
+          addChatMessage(
+            "assistant",
+            error instanceof TypeError
+              ? "Não foi possível conectar à ROMA. Confirme se o servidor está em execução."
+              : error.message,
+            true
+          );
+        } finally {
+          assistantSend.disabled = false;
+          assistantSend.innerHTML = 'Enviar <span aria-hidden="true">↑</span>';
+          setAgentsBusy(false);
+          conversation.scrollTop = conversation.scrollHeight;
+          assistantInput.focus();
+        }
+      });
+
+      document.querySelectorAll(".shortcut").forEach((button) => {
+        button.addEventListener("click", () => {
+          assistantInput.value = button.dataset.command;
+          assistantForm.requestSubmit();
+        });
+      });
+
+      document.querySelector("#project-name").addEventListener("input", (event) => {
+        document.querySelector("#book-title").textContent = event.target.value.trim() || "Meu próximo livro";
+      });
+
+      titleInput.addEventListener("input", () => {
+        const title = titleInput.value.trim();
+        document.querySelector("#chapter-nav-title").textContent = title || "Novo capítulo";
+      });
+
+      draftEditor.addEventListener("input", () => {
+        updateWordCount();
+        document.querySelector("#edit-state").textContent = originalGeneratedText ? "Edição não salva" : "Editando localmente";
+        saveButton.disabled = !originalGeneratedText || !draftEditor.value.trim() || draftEditor.value === originalGeneratedText;
+      });
+
+      generateButton.addEventListener("click", async () => {
+        message.textContent = "";
+        message.classList.remove("error");
+        if (!titleInput.value.trim() || !topicInput.value.trim()) {
+          message.textContent = "Informe o título e o contexto antes de gerar o capítulo.";
+          message.classList.add("error");
+          return;
+        }
+
+        generateButton.disabled = true;
+        generateLabel.textContent = "Gerando...";
+        setAgentsBusy(true);
+        try {
+          const response = await fetch("/api/v1/book/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chapter_title: titleInput.value.trim(),
+              topic_context: topicInput.value.trim(),
+              custom_style: {
+                tone: document.querySelector("#tone").value,
+                pov: document.querySelector("#pov").value,
+                sentence_length: document.querySelector("#pace").value,
+                metaphors_usage: document.querySelector("#metaphors").value
+              }
+            })
+          });
+          const result = await response.json().catch(() => null);
+          if (!response.ok) {
+            const detail = Array.isArray(result?.detail)
+              ? "Confira os campos: título (até 200 caracteres) e contexto (até 20.000 caracteres)."
+              : result?.detail || `Não foi possível gerar o capítulo (HTTP ${response.status}).`;
+            throw new Error(detail);
+          }
+
+          originalGeneratedText = result.draft;
+          draftEditor.value = result.draft;
+          document.querySelector("#edit-state").textContent = "Rascunho gerado";
+          document.querySelector("#chapter-nav-title").textContent = titleInput.value.trim();
+          document.querySelector("#chapter-count").textContent = "01";
+          saveButton.disabled = true;
+          updateWordCount();
+          message.textContent = "Capítulo gerado e revisado. Você pode editar o texto antes de salvar sua revisão.";
+        } catch (error) {
+          message.textContent = error instanceof TypeError
+            ? "Não foi possível conectar à ROMA. Confirme se o servidor está em execução."
+            : error.message;
+          message.classList.add("error");
+        } finally {
+          generateButton.disabled = false;
+          generateLabel.textContent = "Gerar capítulo";
+          setAgentsBusy(false);
+        }
+      });
+
+      saveButton.addEventListener("click", async () => {
+        message.textContent = "";
+        message.classList.remove("error");
+        saveButton.disabled = true;
+        try {
+          const response = await fetch("/api/v1/chapter/feedback", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              prompt_context: topicInput.value.trim(),
+              generated_text: originalGeneratedText,
+              human_edited_text: draftEditor.value.trim()
+            })
+          });
+          const result = await response.json().catch(() => null);
+          if (!response.ok) {
+            throw new Error(result?.detail || `Não foi possível salvar a revisão (HTTP ${response.status}).`);
+          }
+          originalGeneratedText = draftEditor.value;
+          document.querySelector("#edit-state").textContent = "Revisão registrada";
+          document.querySelector("#feedback-count").textContent = result.total_records;
+          message.textContent = "Sua revisão foi registrada com sucesso.";
+          showToast("Revisão salva no registro local de feedback.");
+        } catch (error) {
+          message.textContent = error instanceof TypeError
+            ? "Não foi possível conectar à ROMA. Confirme se o servidor está em execução."
+            : error.message;
+          message.classList.add("error");
+          saveButton.disabled = false;
+        }
+      });
+
+      document.querySelector("#copy-button").addEventListener("click", async () => {
+        if (!draftEditor.value.trim()) {
+          message.textContent = "Gere ou escreva um texto antes de copiar.";
+          message.classList.add("error");
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(draftEditor.value);
+          showToast("Texto copiado para a área de transferência.");
+          message.textContent = "";
+          message.classList.remove("error");
+        } catch (error) {
+          message.textContent = "Não foi possível copiar automaticamente. Selecione e copie o texto do editor.";
+          message.classList.add("error");
+        }
+      });
+
+      document.querySelector("#export-button").addEventListener("click", () => {
+        if (!draftEditor.value.trim()) {
+          showToast("Gere ou escreva um capítulo antes de exportar.");
+          return;
+        }
+        const blob = new Blob([draftEditor.value], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${titleInput.value.trim() || "capitulo"}.md`;
+        link.click();
+        URL.revokeObjectURL(url);
+      });
+    </script>
+  </body>
+</html>
